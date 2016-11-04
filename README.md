@@ -108,13 +108,11 @@ that is intended to be added or removed as a single unit. A plug-in for
 Open MCT will be expressed as a bundle; platform components are also
 expressed as bundles.
 
-A bundle is also just a directory which contains a file `bundle.json`,
-which declares its contents.
+A bundle is also just a directory which contains a file `bundle.js`,
+which uses the registry API to register the bundle with its configuration.
 
-The file `bundles.json` (note the plural), at the top level of the
-repository, is a JSON file containing an array of all bundles (expressed as
-directory names) to include in a running instance of Open MCT. Adding or
-removing paths from this list will add or remove bundles from the running
+The file 'index.html' contains the startup script for the OpenMCT instance with the bundles to include in the process.
+Adding or removing paths from this list will add or remove bundles from the running
 application.
 
 ## Tests

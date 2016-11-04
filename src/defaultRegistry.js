@@ -46,7 +46,6 @@ define([
     '../example/taxonomy/bundle',
     '../example/worker/bundle',
     '../example/localTimeSystem/bundle',
-
     '../platform/commonUI/about/bundle',
     '../platform/commonUI/browse/bundle',
     '../platform/commonUI/dialog/bundle',
@@ -91,7 +90,8 @@ define([
     '../platform/representation/bundle',
     '../platform/search/bundle',
     '../platform/status/bundle',
-    '../platform/telemetry/bundle'
+    '../platform/telemetry/bundle',
+    '../tutorials/todo/bundle'
 ], function (legacyRegistry) {
 
     var DEFAULTS = [

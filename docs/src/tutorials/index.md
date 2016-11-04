@@ -13,6 +13,7 @@ June 4, 2015     | 1.0     | Name changes                      | Victor Woeltjen
 July 28, 2015    | 2.0     | Telemetry adapter tutorial        | Victor Woeltjen
 July 31, 2015    | 2.1     | Clarify telemetry adapter details | Victor Woeltjen
 October 14, 2015 | 2.2     | Conversion to markdown            | Andrew Henry
+October 05, 2016 | 2.3     | Updated for API Registry          | Chris Smith
 
 # Introduction
 
@@ -147,184 +148,111 @@ define([
 __tutorials/todo/bundle.js__
 
 With the new bundle defined, it is now necessary to register the bundle with 
-the application. The details of how a new bundle is defined are in the 
-process of changing. The Open MCT codebase has started to shift from a 
-declarative registration style toward an imperative registration style. 
-The tutorials will be updated with the new bundle registration mechanism once it 
-has been finalized. 
-
+the application. Bundles are exposed to the system by adding an entry in 'src/defaultRegistry.js' and included in a running system by updating 'index.html'. 
+First defaultRegistry.js: 
 #### Before
 ```diff
-requirejs.config({
-    "paths": {
-        "legacyRegistry": "src/legacyRegistry",
-        "angular": "bower_components/angular/angular.min",
-        "angular-route": "bower_components/angular-route/angular-route.min",
-        "csv": "bower_components/comma-separated-values/csv.min",
-        "es6-promise": "bower_components/es6-promise/promise.min",
-        "moment": "bower_components/moment/moment",
-        "moment-duration-format": "bower_components/moment-duration-format/lib/moment-duration-format",
-        "saveAs": "bower_components/FileSaver.js/FileSaver.min",
-        "screenfull": "bower_components/screenfull/dist/screenfull.min",
-        "text": "bower_components/text/text",
-        "uuid": "bower_components/node-uuid/uuid",
-        "zepto": "bower_components/zepto/zepto.min"
-    },
-    "shim": {
-        "angular": {
-            "exports": "angular"
-        },
-        "angular-route": {
-            "deps": [ "angular" ]
-        },
-        "moment-duration-format": {
-            "deps": [ "moment" ]
-        },
-        "screenfull": {
-            "exports": "screenfull"
-        },
-        "zepto": {
-            "exports": "Zepto"
-        }
-    }
-});
-
 define([
-    './platform/framework/src/Main',
     'legacyRegistry',
 
-    './platform/framework/bundle',
-    './platform/core/bundle',
-    './platform/representation/bundle',
-    './platform/commonUI/about/bundle',
-    './platform/commonUI/browse/bundle',
-    './platform/commonUI/edit/bundle',
-    './platform/commonUI/dialog/bundle',
-    './platform/commonUI/formats/bundle',
-    './platform/commonUI/general/bundle',
-    './platform/commonUI/inspect/bundle',
-    './platform/commonUI/mobile/bundle',
-    './platform/commonUI/themes/espresso/bundle',
-    './platform/commonUI/notification/bundle',
-    './platform/containment/bundle',
-    './platform/execution/bundle',
-    './platform/exporters/bundle',
-    './platform/telemetry/bundle',
-    './platform/features/clock/bundle',
-    './platform/features/imagery/bundle',
-    './platform/features/layout/bundle',
-    './platform/features/pages/bundle',
-    './platform/features/plot/bundle',
-    './platform/features/timeline/bundle',
-    './platform/features/table/bundle',
-    './platform/forms/bundle',
-    './platform/identity/bundle',
-    './platform/persistence/aggregator/bundle',
-    './platform/persistence/local/bundle',
-    './platform/persistence/queue/bundle',
-    './platform/policy/bundle',
-    './platform/entanglement/bundle',
-    './platform/search/bundle',
-    './platform/status/bundle',
-    './platform/commonUI/regions/bundle'
-], function (Main, legacyRegistry) {
-    return {
-        legacyRegistry: legacyRegistry,
-        run: function () {
-            return new Main().run(legacyRegistry);
-        }
-    };
+    '../src/adapter/bundle',
+    '../src/api/objects/bundle',
+
+    '../example/builtins/bundle',
+    '../example/composite/bundle',
+    
+....
+    
+    '../platform/status/bundle',
+    '../platform/telemetry/bundle'
+], function (legacyRegistry) {
+
+    var DEFAULTS = [
+        'src/adapter',
+....
+
+    ];
+
+    DEFAULTS.forEach(function (bundlePath) {
+        legacyRegistry.enable(bundlePath);
+    });
+
+    return legacyRegistry;
 });
 ```
-__main.js__
+__defaultRegistry.js__
 
 #### After
 
 ```diff
-requirejs.config({
-    "paths": {
-        "legacyRegistry": "src/legacyRegistry",
-        "angular": "bower_components/angular/angular.min",
-        "angular-route": "bower_components/angular-route/angular-route.min",
-        "csv": "bower_components/comma-separated-values/csv.min",
-        "es6-promise": "bower_components/es6-promise/promise.min",
-        "moment": "bower_components/moment/moment",
-        "moment-duration-format": "bower_components/moment-duration-format/lib/moment-duration-format",
-        "saveAs": "bower_components/FileSaver.js/FileSaver.min",
-        "screenfull": "bower_components/screenfull/dist/screenfull.min",
-        "text": "bower_components/text/text",
-        "uuid": "bower_components/node-uuid/uuid",
-        "zepto": "bower_components/zepto/zepto.min"
-    },
-    "shim": {
-        "angular": {
-            "exports": "angular"
-        },
-        "angular-route": {
-            "deps": [ "angular" ]
-        },
-        "moment-duration-format": {
-            "deps": [ "moment" ]
-        },
-        "screenfull": {
-            "exports": "screenfull"
-        },
-        "zepto": {
-            "exports": "Zepto"
-        }
-    }
-});
-
 define([
-    './platform/framework/src/Main',
     'legacyRegistry',
 
-    './platform/framework/bundle',
-    './platform/core/bundle',
-    './platform/representation/bundle',
-    './platform/commonUI/about/bundle',
-    './platform/commonUI/browse/bundle',
-    './platform/commonUI/edit/bundle',
-    './platform/commonUI/dialog/bundle',
-    './platform/commonUI/formats/bundle',
-    './platform/commonUI/general/bundle',
-    './platform/commonUI/inspect/bundle',
-    './platform/commonUI/mobile/bundle',
-    './platform/commonUI/themes/espresso/bundle',
-    './platform/commonUI/notification/bundle',
-    './platform/containment/bundle',
-    './platform/execution/bundle',
-    './platform/exporters/bundle',
-    './platform/telemetry/bundle',
-    './platform/features/clock/bundle',
-    './platform/features/imagery/bundle',
-    './platform/features/layout/bundle',
-    './platform/features/pages/bundle',
-    './platform/features/plot/bundle',
-    './platform/features/timeline/bundle',
-    './platform/features/table/bundle',
-    './platform/forms/bundle',
-    './platform/identity/bundle',
-    './platform/persistence/aggregator/bundle',
-    './platform/persistence/local/bundle',
-    './platform/persistence/queue/bundle',
-    './platform/policy/bundle',
-    './platform/entanglement/bundle',
-    './platform/search/bundle',
-    './platform/status/bundle',
-    './platform/commonUI/regions/bundle',
+    '../src/adapter/bundle',
+    '../src/api/objects/bundle',
+
+    '../example/builtins/bundle',
+    '../example/composite/bundle',
     
-+   './tutorials/todo/bundle'
-], function (Main, legacyRegistry) {
-    return {
-        legacyRegistry: legacyRegistry,
-        run: function () {
-            return new Main().run(legacyRegistry);
-        }
-    };
+....
+    
+    '../platform/status/bundle',
+    '../platform/telemetry/bundle',
++    '../tutorials/todo/bundle'
+], function (legacyRegistry) {
+
+    var DEFAULTS = [
+        'src/adapter',
+....
+
+    ];
+
+    DEFAULTS.forEach(function (bundlePath) {
+        legacyRegistry.enable(bundlePath);
+    });
+
+    return legacyRegistry;
 });
 ```    
-__main.js__
+__defaultRegistry.js__
+
+Now index.html: 
+#### Before
+```diff
+<script>
+        require(['openmct'], function (openmct) {
+            [
+                'example/imagery',
+                'example/eventGenerator',
+                'example/generator',
+                'platform/features/my-items'
+            ].forEach(
+                openmct.legacyRegistry.enable.bind(openmct.legacyRegistry)
+            );
+            openmct.start();
+        });
+    </script>
+```
+__index.html__
+#### After
+
+```diff
+<script>
+        require(['openmct'], function (openmct) {
+            [
+                'example/imagery',
+                'example/eventGenerator',
+                'example/generator',
++                'tutorials/todo',
+                'platform/features/my-items'
+            ].forEach(
+                openmct.legacyRegistry.enable.bind(openmct.legacyRegistry)
+            );
+            openmct.start();
+        });
+    </script>
+```
+__index.html__
 
 At this point, we can reload Open MCT. We haven't introduced any new 
 functionality, so we don't see anything different, but if we run with logging 
@@ -360,11 +288,11 @@ define([
         {
 +         "types": [
 +          {
-+              "key": "example.todo",
++              "key": "todo",
 +              "name": "To-Do List",
-+              "glyph": "2",
++              "cssclass": "icon-check",
 +              "description": "A list of things that need to be done.",
-+              "features": ["creation"]
++              "features": "creation"
 +          }
 +       ]}
     });
@@ -382,8 +310,7 @@ Going through the properties we've defined:
 domain objects of this type.
 * The `name` of "To-Do List" is the human-readable name for this type, and will 
 be shown to users.
-* The `glyph` refers to a special character in Open MCT's custom font set; 
-this will be used as an icon.
+* The `cssclass` refers to the css icon class to use. See: platform/commonUI/general/res/sass/_glyphs.scss.
 * The `description` is also human-readable, and will be used whenever a longer 
 explanation of what this type is should be shown.
 * Finally, the `features` property describes some special features of objects of 
@@ -457,16 +384,16 @@ define([
             {
                 "key": "example.todo",
                 "name": "To-Do List",
-                "glyph": "2",
+                "cssclass": "icon-check",
                 "description": "A list of things that need to be done.",
-                "features": ["creation"]
+                "features": "creation"
             }
         ],
 +       "views": [
 +           {
 +               "key": "example.todo",
 +               "type": "example.todo",
-+               "glyph": "2",
++               "cssclass": "icon-check",
 +               "name": "List",
 +               "templateUrl": "templates/todo.html",
 +               "editable": true
@@ -488,7 +415,7 @@ the domain object type, but could have chosen any unique name.
 domain objects of that type. This means that we'll see this view for To-do Lists 
 that we create, but not for other domain objects (such as Folders.)
 
-* The `glyph` and `name` properties describe the icon and human-readable name 
+* The `cssclass` and `name` properties describe the icon and human-readable name 
 for this view to display in the UI where needed (if multiple views are available 
 for To-do Lists, the user will be able to choose one.)
 
@@ -514,9 +441,9 @@ define([
             {
                 "key": "example.todo",
                 "name": "To-Do List",
-                "glyph": "2",
+                "cssclass": "icon-check",
                 "description": "A list of things that need to be done.",
-                "features": ["creation"],
+                "features": "creation",
 +               "model": {
 +                   "tasks": [
 +                       { "description": "Add a type", "completed": true },
@@ -529,7 +456,7 @@ define([
             {
                 "key": "example.todo",
                 "type": "example.todo",
-                "glyph": "2",
+                "cssclass": "icon-check",
                 "name": "List",
                 "templateUrl": "templates/todo.html",
                 "editable": true
