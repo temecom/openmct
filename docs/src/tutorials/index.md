@@ -367,6 +367,8 @@ assume that all tasks will be stored in a property `tasks`, and that each will b
 an object containing a `description` (the readable summary of the task) and a 
 boolean `completed` flag.
 
+'!!!!! Not working past here !!!!! - cs'
+
 To expose this view in Open MCT, we need to declare it in our bundle 
 definition:
 
