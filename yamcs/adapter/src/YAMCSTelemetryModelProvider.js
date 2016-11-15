@@ -1,0 +1,101 @@
+/*****************************************************************************
+ * Open MCT, Copyright (c) 2014-2016, United States Government
+ * as represented by the Administrator of the National Aeronautics and Space
+ * Administration. All rights reserved.
+ *
+ * Open MCT is licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * Open MCT includes source code licensed under additional open source
+ * licenses. See the Open Source Licenses file (LICENSES.md) included with
+ * this source code distribution or the Licensing information page available
+ * at runtime from the About dialog for additional information.
+ *****************************************************************************/
+
+/*global define*/
+
+define(
+    function () {
+        "use strict";
+
+        var PREFIX = "yamcs_tlm:",
+            FORMAT_MAPPINGS = {
+                float: "number",
+                integer: "number",
+                string: "string"
+            };
+
+        function YAMCSTelemetryModelProvider(adapter, $q) {
+            var modelPromise, empty = $q.when({});
+
+            // Check if this model is in our dictionary (by prefix)
+            function isRelevant(id) {
+                return id.indexOf(PREFIX) === 0;
+            }
+
+            // Build a domain object identifier by adding a prefix
+            function makeId(element) {
+                return PREFIX + element.identifier;
+            }
+
+            // Create domain object models from this dictionary
+            function buildTaxonomy(dictionary) {
+                var models = {};
+
+                // Create & store a domain object model for a measurement
+                function addMeasurement(measurement) {
+                    var format = FORMAT_MAPPINGS[measurement.type];
+                    models[makeId(measurement)] = {
+                        type: "yamcs.measurement",
+                        name: measurement.name,
+                        telemetry: {
+                            key: measurement.identifier,
+                            ranges: [{
+                                key: "value",
+                                name: "Value",
+                                units: measurement.units,
+                                format: format
+                            }]
+                        }
+                    };
+                }
+
+                // Create & store a domain object model for a subsystem
+                function addSubsystem(subsystem) {
+                    var measurements =
+                        (subsystem.measurements || []);
+                    models[makeId(subsystem)] = {
+                        type: "yamcs.subsystem",
+                        name: subsystem.name,
+                        composition: measurements.map(makeId)
+                    };
+                    measurements.forEach(addMeasurement);
+                }
+
+                (dictionary.subsystems || []).forEach(addSubsystem);
+
+                return models;
+            }
+
+            // Begin generating models once the dictionary is available
+            modelPromise = adapter.dictionary().then(buildTaxonomy);
+
+            return {
+                getModels: function (ids) {
+                    // Return models for the dictionary only when they
+                    // are relevant to the request.
+                    return ids.some(isRelevant) ? modelPromise : empty;
+                }
+            };
+        }
+        return YAMCSTelemetryModelProvider;
+    }
+);
